@@ -226,9 +226,17 @@
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
-    // TIP: There's a very clever way to re-use every() here.
+    var passing = false;
+    var iteratorMain = iterator === undefined
+      ? _.identity
+      : iterator;
 
-
+    _.each(collection, function(element) {
+      if (iteratorMain(element)) {
+        passing = true;
+      }
+    });
+    return passing;
   };
 
 
@@ -251,12 +259,28 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    for (var i = 0; i < arguments.length; i++) {
+      for (var key in arguments[i]) {
+        arguments[0][key] = arguments[i][key];
+      }
+    }
+    return arguments[0];
   };
+
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    for (var i = 0; i < arguments.length; i++) {
+      for (var key in arguments[i]) {
+        if (arguments[0][key] === undefined) {
+          arguments[0][key] = arguments[i][key];
+        }
+      }
+    }
+    return arguments[0];
   };
+
 
 
   /**
@@ -299,6 +323,17 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var value = {};
+
+
+    return function() {
+      if (value[JSON.stringify(arguments)] !== undefined) {
+        return value[JSON.stringify(arguments)];
+      } else {
+        value[JSON.stringify(arguments)] = func(...arguments);
+        return value[JSON.stringify(arguments)];
+      }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -307,7 +342,11 @@
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
-  _.delay = function(func, wait) {
+  _.delay = function(func, wait, a, b) {
+    var callback = function() {
+      func(a, b);
+    };
+    setTimeout(callback, wait);
   };
 
 
@@ -322,6 +361,15 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var result = [];
+    var copy = array.slice();
+
+    while (copy.length > 0) {
+      var randex = Math.floor(Math.random() * copy.length);
+      result.push(copy[randex]);
+      copy.splice(randex, 1);
+    }
+    return result;
   };
 
 
